@@ -57,6 +57,29 @@ RCT_EXPORT_METHOD(showSimpleText:(NSString *)message duration:(NSInteger)duratio
     });
     
 }
+RCT_EXPORT_METHOD(show:(NSString *)message image:(NSString *)imageName duration:(NSInteger)duration)
+{
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if(self.hub){
+            [self.hub hideAnimated:YES];
+        }
+        self.hub = [MBProgressHUD showHUDAddedTo:self.window animated:YES];
+        self.hub.mode = MBProgressHUDModeCustomView;
+
+        UIImage *image = [[UIImage imageNamed:imageName] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+        self.hub.customView = [[UIImageView alloc] initWithImage:image];
+        self.hub.square = YES;
+
+        self.hub.label.text = message;
+        
+        if (self.hub) {
+            [self.hub hideAnimated:YES afterDelay:duration / 1000];
+            self.hub = NULL;
+        }
+    });
+    
+}
 RCT_EXPORT_METHOD(showSpinIndeterminate)
 {
     dispatch_async(dispatch_get_main_queue(), ^{

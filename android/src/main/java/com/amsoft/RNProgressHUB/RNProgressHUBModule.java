@@ -2,11 +2,12 @@ package com.amsoft.RNProgressHUB;
 
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.os.Handler;
-import android.util.Log;
 import android.widget.TextView;
+import android.widget.LinearLayout;
+import android.widget.ImageView;
 
-import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -34,10 +35,7 @@ public class RNProgressHUBModule  extends ReactContextBaseJavaModule {
     public void showSimpleText(String message, int duration) {
 
         //关闭上一个实例
-        if(currentHud != null) {
-            currentHud.dismiss();
-            currentHud = null;
-        };
+        dismissCurrentHud();
 
         Activity activity = getCurrentActivity();
 
@@ -52,11 +50,38 @@ public class RNProgressHUBModule  extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void show(String message, String imageName, int duration) {
+        dismissCurrentHud();
+
+        Activity activity = getCurrentActivity();
+
+        LinearLayout customView = new LinearLayout(activity);
+        customView.setOrientation(LinearLayout.VERTICAL);
+
+        ImageView imageView = new ImageView(activity);
+        int id = getCurrentActivity().getResources().getIdentifier(imageName, "drawable", getCurrentActivity().getPackageName());
+        imageView.setImageResource(id);
+        imageView.setColorFilter(Color.parseColor("#FFFFFF"));
+        customView.addView(imageView);
+
+        if (message != null) {
+            TextView textView = new TextView(activity);
+            textView.setText(message);
+            textView.setTextColor(0xffffffff);
+            textView.setTextSize(18.f);
+            textView.setTextAlignment(TextView.TEXT_ALIGNMENT_CENTER);
+            customView.addView(textView);
+        }
+
+        currentHud = KProgressHUD.create(activity)
+                .setCustomView(customView)
+                .show();
+        scheduleDismiss(duration);
+    }
+    
+    @ReactMethod
     public void showSpinIndeterminate(){
-        if(currentHud != null) {
-            currentHud.dismiss();
-            currentHud = null;
-        };
+        dismissCurrentHud();
 
 
         currentHud = KProgressHUD.create(getCurrentActivity())
@@ -68,10 +93,7 @@ public class RNProgressHUBModule  extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void showSpinIndeterminateWithTitle(String label){
-        if(currentHud != null) {
-            currentHud.dismiss();
-            currentHud = null;
-        };
+        dismissCurrentHud();
         currentHud = KProgressHUD.create(getCurrentActivity())
                 .setStyle(KProgressHUD.Style.SPIN_INDETERMINATE)
                 .setLabel(label)
@@ -80,10 +102,7 @@ public class RNProgressHUBModule  extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void showSpinIndeterminateWithTitleAndDetails(String label, String details){
-        if(currentHud != null) {
-            currentHud.dismiss();
-            currentHud = null;
-        };
+        dismissCurrentHud();
         currentHud = KProgressHUD.create(getCurrentActivity())
                 .setStyle(KProgressHUD.Style.SPIN_INDETERMINATE)
                 .setLabel(label)
@@ -93,12 +112,7 @@ public class RNProgressHUBModule  extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void showDeterminate(int mode, String title, String details){
-        if(currentHud != null) {
-            currentHud.dismiss();
-            currentHud = null;
-        }
-
-//        String modeStr = String.valueOf(mode);
+        dismissCurrentHud();
 
         currentHud = KProgressHUD.create(getCurrentActivity());
         currentHud.setMaxProgress(100);
@@ -122,9 +136,7 @@ public class RNProgressHUBModule  extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void dismiss(){
-        if(currentHud != null){
-            currentHud.dismiss();
-        }
+        dismissCurrentHud();
     }
 
     //定时关闭
@@ -134,14 +146,22 @@ public class RNProgressHUBModule  extends ReactContextBaseJavaModule {
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    if(currentHud != null){
-                        currentHud.dismiss();
-                        currentHud = null;
-                    }
+                    dismissCurrentHud();
                 }
             }, duration);
         }
+    }
 
+    private void dismissCurrentHud() {
+        if(currentHud != null){
+            try {
+                currentHud.dismiss();
+            } catch (Exception e) {
+                //
+            } finally {
+                currentHud = null;
+            }
+        }
     }
 
 
