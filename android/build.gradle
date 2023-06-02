@@ -17,5 +17,5 @@ android {
 
 dependencies {
   implementation 'com.facebook.react:react-native:0.20.+'
-  implementation 'com.kaopiz:kprogresshud:1.0.5'
+  implementation 'com.github.harrisonsj:KProgressHUD:1.1'
 }
